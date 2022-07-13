@@ -7,8 +7,11 @@
 
 #ifdef DEBUG
 #define debug_assert(expr) assert(expr)
+#define debug_printf(...) printf(__VA_ARGS__)
 #else
-#define debug_assert(expr) do {} while(false)
+// #define debug_assert(expr) do {} while(false)
+#define debug_assert(expr) (sizeof(expr), 1)
+#define debug_printf(...) (sizeof(__VA_ARGS__), -1)
 #endif
 
 struct polynom_header {
@@ -32,7 +35,7 @@ struct polynom_header {
 /**
  * @brief Initializes a polynomial
  * 
- * @return An initialized polynomial with no guarantees about its coefficients ()
+ * @return An initialized polynomial with no guarantees about its coefficients
  */
 Polynom polynom_new() {
     Polynom q = malloc(sizeof(struct polynom_header));
@@ -160,9 +163,35 @@ void polynom_coeff_set(Polynom p, size_t i, double a) {
     return;
 }
 
-void polynom_to_string(Polynom p, char *buf);
-void polynom_to_array(Polynom p, double *buf);
-Polynom polynom_from_array(double *buf);
+/** TODO:
+ * @brief 
+ * 
+ * @param[] p
+ * @param[] buf
+ */
+void polynom_to_string(Polynom p, char *buf) {
+    return;
+}
+
+/** TODO:
+ * @brief 
+ * 
+ * @param[] p
+ * @param[] buf
+ */
+void polynom_to_array(Polynom p, double *buf) {
+    return;
+}
+
+/** TODO:
+ * @brief 
+ * 
+ * @param[] buf
+ * @return Polynom 
+ */
+Polynom polynom_from_array(double *buf) {
+    return polynom_new();
+}
 
 /* Degree */
 
@@ -326,7 +355,9 @@ void polynom_divide_scalar(Polynom q, Polynom p, double c) {
  * @param[] p1
  * @param[] p2
  */
-void polynom_divide_vector(Polynom q, Polynom p1, Polynom p2);
+void polynom_divide_vector(Polynom q, Polynom p1, Polynom p2) {
+    return;
+}
 
 /** TODO:
  * @brief 
@@ -335,7 +366,9 @@ void polynom_divide_vector(Polynom q, Polynom p1, Polynom p2);
  * @param[] p
  * @param[] k
  */
-void polynom_power(Polynom q, Polynom p, int k);
+void polynom_power(Polynom q, Polynom p, int k) {
+    return;
+}
 
 /** 
  * @brief q = x^k
@@ -345,16 +378,27 @@ void polynom_power(Polynom q, Polynom p, int k);
  * @param[in] k The power
  */
 void polynom_scale(Polynom q, Polynom p, size_t k) {
-
+    size_t new_deg = p->degree + k;
+    size_t min_length = new_deg + 1;
+    if (q->terms_length < min_length) {
+        q->terms_length = min_length;
+        q->terms = calloc(sizeof(double), min_length);
+    }
+    q->degree = new_deg;
+    for (int i = 0; i <= p->degree; i++) {
+        q->terms[i+k] = p->terms[i];
+    }
+    return;
 }
 
-/**
- * @brief 
+/** TODO:
+ * @brief Compacts a polynomial to use minimal space
  * 
- * @param[] q
- * @param[] p
+ * @param[in] p Polynomial to reduce
  */
-void polynom_reduce(Polynom q, Polynom p);
+void polynom_reduce(Polynom p) {
+    return;
+}
 
 /* Calculus */
 
@@ -364,7 +408,9 @@ void polynom_reduce(Polynom q, Polynom p);
  * @param[] q
  * @param[] p
  */
-void polynom_derive(Polynom q, Polynom p);
+void polynom_derive(Polynom q, Polynom p) {
+    return;
+}
 
 /** TODO:
  * @brief 
@@ -372,4 +418,6 @@ void polynom_derive(Polynom q, Polynom p);
  * @param[] q
  * @param[] p
  */
-void polynom_integrate(Polynom q, Polynom p);
+void polynom_integrate(Polynom q, Polynom p) {
+    return;
+}
