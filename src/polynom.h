@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
-typedef struct polynom_header *Polynom;
+typedef struct polynom_header Polynom;
 
 /*************
  * Interface *
@@ -22,13 +22,13 @@ void polynom_destroy(Polynom p);
 /* Coefficients */
 double polynom_coeff_get(Polynom p, size_t i);
 void polynom_coeff_set(Polynom p, size_t i, double a);
-void polynom_to_string(Polynom p, char *buf);
-void polynom_to_array(Polynom p, double *buf);
-Polynom polynom_from_array(double *buf);
+char *polynom_to_string(Polynom p);
+double *polynom_to_array(Polynom p, size_t *size);
+Polynom polynom_from_array(double *buf, size_t len);
 
 /* Degree */
 size_t polynom_degree(Polynom p);
-int polynom_degree_compare(Polynom p);
+int polynom_degree_compare(Polynom p1, Polynom p2);
 size_t polynom_degree_max(Polynom p1, Polynom p2);
 
 /* Equality and order */
@@ -37,18 +37,18 @@ int polynom_compare(Polynom p1, Polynom p2);
 
 /* Arithmetic */
 double polynom_evaluate(Polynom p, double x);
-void polynom_add(Polynom q, Polynom p1, Polynom p2);
-void polynom_subtract(Polynom q, Polynom p1, Polynom p2);
-void polynom_multiply_scalar(Polynom q, Polynom p, double c);
-void polynom_multiply_vector(Polynom q, Polynom p1, Polynom p2);
-void polynom_divide_scalar(Polynom q, Polynom p, double c);
-void polynom_divide_vector(Polynom q, Polynom p1, Polynom p2);
-void polynom_power(Polynom q, Polynom p, int k);
-void polynom_scale(Polynom q, Polynom p, size_t k);
-void polynom_reduce(Polynom q, Polynom p);
+Polynom polynom_add(Polynom p1, Polynom p2);
+Polynom polynom_subtract(Polynom p1, Polynom p2);
+Polynom polynom_multiply_calar(Polynom p, double c);
+Polynom polynom_multiply_vector(Polynom p1, Polynom p2);
+Polynom polynom_divide_scalar(Polynom p, double c);
+Polynom polynom_divide_vector(Polynom p1, Polynom p2);
+Polynom polynom_power(Polynom p, int k);
+Polynom polynom_scale(Polynom p, int k);
+Polynom polynom_reduce(Polynom p);
 
 /* Calculus */
-void polynom_derive(Polynom q, Polynom p);
-void polynom_integrate(Polynom q, Polynom p);
+Polynom polynom_derive(Polynom p);
+Polynom polynom_integrate(Polynom p);
 
 #endif
