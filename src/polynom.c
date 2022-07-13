@@ -1,4 +1,6 @@
 #include <assert.h>
+#include <math.h>
+#include <stdio.h>
 #include <string.h>
 
 #include "polynom.h"
@@ -13,7 +15,7 @@ struct polynom_header {
     double *terms;
     size_t degree;
     size_t terms_length;
-}
+};
 
 /********************
  * Helper functions *
@@ -111,7 +113,7 @@ Polynom polynom_x_to_the(size_t k) {
 }
 
 /**
- * @brief Frees the space taken by the polynomial back to the OS
+ * @brief Frees the memory taken by the polynomial
  * 
  * @param[in] p Polynomial to be freed
  */
@@ -121,7 +123,7 @@ void polynom_destroy(Polynom p) {
         exit(-1);
     }
     free(p->terms);
-    free(p)
+    free(p);
 }
 
 /* Coefficients */
@@ -163,25 +165,211 @@ void polynom_to_array(Polynom p, double *buf);
 Polynom polynom_from_array(double *buf);
 
 /* Degree */
-size_t polynom_degree(Polynom p);
-int polynom_degree_compare(Polynom p);
 
-/* Equality and order */
-bool polynom_equal(Polynom p1, Polynom p2);
-int polynom_compare(Polynom p1, Polynom p2);
+/**
+ * @brief Returns the degree of a polynomial
+ * 
+ * @param[in] p The polynomial
+ * @return The degree
+ */
+size_t polynom_degree(Polynom p) {
+    return p->degree;
+}
+
+/**
+ * @brief Compares the degrees of two polynomials
+ * 
+ * @param[in] p1 The first polynomial
+ * @param[in] p2 The second polynomial
+ * @return deg(p1) < deg(p2) -> -1
+ *         deg(p1) == deg(p2) -> 0
+ *         deg(p1) > deg(p2) -> 1
+ */
+int polynom_degree_compare(Polynom p1, Polynom p2) {
+    if (p1->degree < p2->degree) return -1;
+    else if (p1->degree == p2->degree) return 0;
+    else return 1;
+}
+
+size_t polynom_degree_max(Polynom p1, Polynom p2) {
+    if (polynom_degree_compare(p1, p2) == -1) return p2->degree;
+    else return p1->degree;
+}
+
+/* Equality */
+
+/**
+ * @brief Returns whether p1 == p2
+ * 
+ * @param[in] p1 The first polynomial
+ * @param[in] p2 The second polynomial
+ * @return p1 == p2
+ */
+bool polynom_equal(Polynom p1, Polynom p2) {
+    if (p1->degree != p2->degree) return false;
+    for (int i = 0; i <= p1->degree; i++) {
+        if (p1->terms[i] != p2->terms[i]) return false;
+    }
+    return true;
+}
 
 /* Arithmetic */
-double polynom_evaluate(Polynom p, double x);
-void polynom_add(Polynom q, Polynom p1, Polynom p2);
-void polynom_subtract(Polynom q, Polynom p1, Polynom p2);
-void polynom_multiply_scalar(Polynom q, Polynom p1, double c);
-void polynom_multiply_vector(Polynom q, Polynom p1, Polynom p2);
-void polynom_divide_scalar(Polynom q, Polynom p1, Polynom p2);
+
+/**
+ * @brief Returns the result of evaluating the polynomial at x via 
+ *        Horner's method
+ * 
+ * @param[in] p The polynomial to evaluate
+ * @param[in] x The value at which to evaluate p
+ * @return p(x)
+ */
+double polynom_evaluate(Polynom p, double x) {
+    double result = p->terms[p->degree];
+    for (int i = p->degree - 1; i >= 0; i--) {
+        result *= x;
+        result += p->terms[i];
+    }
+    return result;
+}
+
+/**
+ * @brief q(x) = p1(x) + p2(x)
+ * 
+ * @param[out] q The resulting polynomial
+ * @param[in] p1 The first polynomial
+ * @param[in] p2 The second polynomial
+ */
+void polynom_add(Polynom q, Polynom p1, Polynom p2) {
+    size_t deg_max = polynom_degree_max(p1, p2);
+    size_t size_min = (deg_max+1);
+    q->degree = deg_max;
+    if (q->terms_length < size_min) {
+        q->terms = malloc(sizeof(double) * size_min);
+        q->terms_length = size_min;
+    } else {
+        memset(q->terms, 0, sizeof(double) * q->terms_length);
+    }
+    for (int i = 0; i <= deg_max; i++) {
+        q->terms[i] = polynom_coeff_get(p1, i) + polynom_coeff_get(p2, i);
+    }
+    return;
+}
+
+/**
+ * @brief q(x) = p1(x) - p2(x)
+ * 
+ * @param[out] q The resulting polynomial
+ * @param[in] p1 The first polynomial
+ * @param[in] p2 The second polynomial
+ */
+void polynom_subtract(Polynom q, Polynom p1, Polynom p2) {
+    size_t deg_max = polynom_degree_max(p1, p2);
+    size_t size_min = (deg_max+1);
+    q->degree = deg_max;
+    if (q->terms_length < size_min) {
+        q->terms = malloc(sizeof(double) * size_min);
+        q->terms_length = size_min;
+    } else {
+        memset(q->terms, 0, sizeof(double) * q->terms_length);
+    }
+    for (int i = 0; i <= deg_max; i++) {
+        q->terms[i] = polynom_coeff_get(p1, i) - polynom_coeff_get(p2, i);
+    }
+    return;
+}
+
+/**
+ * @brief q(x) = p(x) * c
+ * 
+ * @param[out] q The resulting polynomial
+ * @param[in] p The polynomial
+ * @param[in] c The constant
+ */
+void polynom_multiply_scalar(Polynom q, Polynom p, double c) {
+    size_t deg = p->degree;
+    for (int i = 0; i <= deg; i++) {
+        q->terms[i] = polynom_coeff_get(p, i) * c;
+    }
+    return;
+}
+
+/** TODO:
+ * @brief 
+ * 
+ * @param[] q
+ * @param[] p1
+ * @param[] p2
+ */
+void polynom_multiply_vector(Polynom q, Polynom p1, Polynom p2) {
+    return;
+}
+
+/**
+ * @brief q(x) = p(x) / c
+ * 
+ * @param[out] q The resulting polynomial
+ * @param[in] p The polynomial
+ * @param[in] c The constant
+ */
+void polynom_divide_scalar(Polynom q, Polynom p, double c) {
+    size_t deg = p->degree;
+    for (int i = 0; i <= deg; i++) {
+        q->terms[i] = polynom_coeff_get(p, i) / c;
+    }
+    return;
+}
+
+/** TODO:
+ * @brief 
+ * 
+ * @param[] q
+ * @param[] p1
+ * @param[] p2
+ */
 void polynom_divide_vector(Polynom q, Polynom p1, Polynom p2);
+
+/** TODO:
+ * @brief 
+ * 
+ * @param[] q
+ * @param[] p
+ * @param[] k
+ */
 void polynom_power(Polynom q, Polynom p, int k);
-void polynom_scale(Polynom q, size_t k);
+
+/** 
+ * @brief q = x^k
+ * 
+ * @param[out] q The resulting polynomial
+ * @param[in] p The polynomial
+ * @param[in] k The power
+ */
+void polynom_scale(Polynom q, Polynom p, size_t k) {
+
+}
+
+/**
+ * @brief 
+ * 
+ * @param[] q
+ * @param[] p
+ */
 void polynom_reduce(Polynom q, Polynom p);
 
 /* Calculus */
+
+/** TODO:
+ * @brief 
+ * 
+ * @param[] q
+ * @param[] p
+ */
 void polynom_derive(Polynom q, Polynom p);
+
+/** TODO:
+ * @brief 
+ * 
+ * @param[] q
+ * @param[] p
+ */
 void polynom_integrate(Polynom q, Polynom p);
