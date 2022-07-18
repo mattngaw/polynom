@@ -1,5 +1,7 @@
-./build/
+build/
 
-./tests/
+.vscode/
 
-./.vscode/
+*.code-workspace
+
+*.out
